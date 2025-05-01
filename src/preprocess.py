@@ -5,12 +5,12 @@ import cv2
 import numpy as np
 import pytesseract
 from PIL import Image
-
-
+tessdata_dir_config = '-l osd --psm 0 '
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 def process_image(img_path):
     temp_filename = resize_image(img_path)
     img = remove_noise_and_smooth(temp_filename)
-    img = fix_rotation(img)
+    img = fix_rotation(img, img_path)
     # img = remove_lines(img)
 
     return img
@@ -22,7 +22,7 @@ def resize_image(img_path):
         length_x, width_y = img.size
         factor = max(1, int(1800 / length_x))  # 1800 for tesserect
         size = factor * length_x, factor * width_y
-        im_resized = img.resize(size, Image.ANTIALIAS)
+        im_resized = img.resize(size, Image.LANCZOS)
 
         import tempfile
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".TIFF")
@@ -51,7 +51,7 @@ def remove_noise_and_smooth(img_path):
         opening = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
         closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
         img = cv2.bitwise_or(img, closing)
-        show_wait_destroy('bitwise_or', img)
+        # show_wait_destroy('bitwise_or', img)
 
         # img = apply_threshold(img, 1)
         # show_wait_destroy('threshold', img)
@@ -85,10 +85,11 @@ def smooth_image(img):
     return blur_img
 
 
-def fix_rotation(img):
+def fix_rotation(img, path):
     rotated_img = img
     # osd: orientation and script detection
-    tess_data = pytesseract.image_to_osd(img, nice=1)
+    tess_data = pytesseract.image_to_osd(path, nice=1,  config=tessdata_dir_config)
+
     angle = int(re.search(r"(?<=Rotate: )\d+", tess_data).group(0))
     print("angle: " + str(angle))
 

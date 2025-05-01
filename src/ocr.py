@@ -12,7 +12,7 @@ input_dir = os.path.join(dirname, "data")  # Directory of pdf/image files
 output_dir = os.path.join(dirname, "output")  # Directory of ocr'ed images
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-
+poppler_path = r"C:\Program Files\poppler-24.08.0\Library\bin"
 
 def main():
     for filename in os.listdir(input_dir):
@@ -20,10 +20,11 @@ def main():
         if filename.endswith('.pdf'):
             print(os.path.join(input_dir, filename))
             fullName = os.path.join(input_dir, filename)
-            pages = convert_from_path(fullName, 500)
+            pages = convert_from_path(fullName, 500, poppler_path=poppler_path)
             image_counter = 1
             for page in pages:
-                image_name = os.path.splitext(fullName)[0] + '_' + str(image_counter) + '.tiff'
+                formatted_num = str(image_counter).zfill(3)
+                image_name = os.path.splitext(fullName)[0] + '_' + str(formatted_num) + '.tiff'
                 page.save(image_name, format='TIFF')
                 image_counter += 1
 
